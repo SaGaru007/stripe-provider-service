@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Payment Successful</title>
+<style>
+  body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f4f6fb;color:#1f2937;display:flex;min-height:100vh;align-items:center;justify-content:center}
+  .card{background:#fff;max-width:420px;width:92%;padding:32px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}
+  .ok{font-size:48px;color:#16a34a}
+  .row{background:#f4f6fb;border-radius:8px;padding:10px;margin:8px 0;font-size:14px;word-break:break-all}
+  a{color:#635bff}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="ok">&#10004;</div>
+  <h1>Payment Successful</h1>
+  <p>Thanks! Your test payment went through.</p>
+  <div class="row" id="status">Checking status from the API...</div>
+  <p><a href="/">Make another payment</a></p>
+</div>
+<script>
+const id = new URLSearchParams(location.search).get('id');
+const box = document.getElementById('status');
+if (!id || id.indexOf('{') !== -1) {
+  box.textContent = 'Payment complete.';
+} else {
+  fetch('/payments/' + encodeURIComponent(id))
+    .then(r => r.json())
+    .then(d => { box.innerHTML = 'Payment status: <b>' + (d.paymentStatus || 'n/a') +
+                 '</b><br>Session: <b>' + (d.sessionStatus || 'n/a') + '</b>'; })
+    .catch(() => { box.textContent = 'Payment complete.'; });
+}
+</script>
+</body>
+</html>
