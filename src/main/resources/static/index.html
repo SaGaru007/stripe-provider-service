@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stripe Payment Demo</title>
+<style>
+  body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f4f6fb;color:#1f2937;display:flex;min-height:100vh;align-items:center;justify-content:center}
+  .card{background:#fff;max-width:420px;width:92%;padding:32px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.08);text-align:center}
+  h1{font-size:22px;margin:0 0 6px}
+  .sub{color:#6b7280;font-size:14px;margin-bottom:22px}
+  .price{font-size:34px;font-weight:700;margin:12px 0}
+  button{background:#635bff;color:#fff;border:0;border-radius:8px;padding:13px 26px;font-size:16px;cursor:pointer;width:100%}
+  button:disabled{opacity:.6;cursor:wait}
+  .hint{font-size:12.5px;color:#6b7280;margin-top:16px;line-height:1.5}
+  code{background:#eef0f6;padding:2px 6px;border-radius:4px}
+  .err{color:#b91c1c;font-size:13px;margin-top:12px}
+  a{color:#635bff}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Stripe Payment Demo</h1>
+  <div class="sub">Java · Spring Boot · Stripe Checkout (test mode)</div>
+  <div>Test Product</div>
+  <div class="price">$10.00</div>
+  <button id="pay">Pay with Stripe</button>
+  <div class="err" id="err"></div>
+  <div class="hint">
+    Test mode only, no real money. Use card <code>4242 4242 4242 4242</code>,
+    any future expiry, any CVC.<br>
+    The first click may take up to a minute while the free server wakes up.<br><br>
+    <a href="/swagger-ui/index.html">API docs (Swagger)</a>
+  </div>
+</div>
+<script>
+document.getElementById('pay').addEventListener('click', async function () {
+  const btn = this, err = document.getElementById('err');
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'Creating payment...';
+  try {
+    const res = await fetch('/payments', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        successUrl: location.origin + '/success.html?id={CHECKOUT_SESSION_ID}',
+        cancelUrl: location.origin + '/cancel.html',
+        lineItems: [{currency: 'usd', quantity: 1, productName: 'Test Product', unitAmount: 1000}]
+      })
+    });
+    if (!res.ok) throw new Error('Server returned ' + res.status);
+    const data = await res.json();
+    window.location.href = data.url;
+  } catch (e) {
+    err.textContent = 'Could not start payment: ' + e.message;
+    btn.disabled = false; btn.textContent = 'Pay with Stripe';
+  }
+});
+</script>
+</body>
+</html>
